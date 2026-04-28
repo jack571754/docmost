@@ -28,7 +28,6 @@ export class StaticModule implements OnModuleInit {
     const indexFilePath = join(clientDistPath, 'index.html');
 
     if (fs.existsSync(clientDistPath) && fs.existsSync(indexFilePath)) {
-      const indexTemplateFilePath = join(clientDistPath, 'index-template.html');
       const windowVar = '<!--window-config-->';
 
       const configString = {
@@ -52,29 +51,22 @@ export class StaticModule implements OnModuleInit {
       };
 
       const windowScriptContent = `<script>window.CONFIG=${JSON.stringify(configString)};</script>`;
-
-      if (!fs.existsSync(indexTemplateFilePath)) {
-        fs.copyFileSync(indexFilePath, indexTemplateFilePath);
-      }
-
-      const html = fs.readFileSync(indexTemplateFilePath, 'utf8');
+      const html = fs.readFileSync(indexFilePath, 'utf8');
       const transformedHtml = html.replace(windowVar, windowScriptContent);
-
-      fs.writeFileSync(indexFilePath, transformedHtml);
 
       const RENDER_PATH = '*';
 
       await app.register(fastifyStatic, {
         root: clientDistPath,
+        index: false,
         wildcard: false,
       });
 
       app.get(RENDER_PATH, (req: any, res: any) => {
-        const stream = fs.createReadStream(indexFilePath);
         res
           .header('Cache-Control', 'no-cache, no-store, must-revalidate')
           .type('text/html')
-          .send(stream);
+          .send(transformedHtml);
       });
     }
   }

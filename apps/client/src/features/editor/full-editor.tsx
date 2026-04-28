@@ -14,7 +14,6 @@ import {
 import { useAtom } from "jotai";
 import { userAtom } from "@/features/user/atoms/current-user-atom.ts";
 import { CustomAvatar } from "@/components/ui/custom-avatar.tsx";
-import { PageVerificationBadge } from "@/ee/page-verification";
 import { useTranslation } from "react-i18next";
 import { IContributor } from "@/features/page/types/page.types.ts";
 
@@ -69,7 +68,6 @@ export function FullEditor({
       <PageByline
         creator={creator}
         contributors={contributors}
-        readOnly={!editable}
       />
       <MemoizedPageEditor
         pageId={pageId}
@@ -84,13 +82,11 @@ export function FullEditor({
 type PageBylineProps = {
   creator?: PageCreator;
   contributors?: IContributor[];
-  readOnly?: boolean;
 };
 
 function PageByline({
   creator,
   contributors,
-  readOnly,
 }: PageBylineProps) {
   const { t } = useTranslation();
 
@@ -165,7 +161,6 @@ function PageByline({
           </Popover.Dropdown>
         </Popover>
       )}
-      <PageVerificationBadge readOnly={readOnly} />
     </Group>
   );
 }

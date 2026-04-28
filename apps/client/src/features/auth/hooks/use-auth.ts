@@ -26,8 +26,17 @@ import {
 import APP_ROUTE, { getPostLoginRedirect } from "@/lib/app-route.ts";
 import { RESET } from "jotai/utils";
 import { useTranslation } from "react-i18next";
-import { isCloud } from "@/lib/config.ts";
-import { exchangeTokenRedirectUrl, getHostnameUrl } from "@/ee/utils.ts";
+import { getServerAppUrl, getSubdomainHost, isCloud } from "@/lib/config.ts";
+
+function getHostnameUrl(hostname: string): string {
+  const url = new URL(getServerAppUrl());
+  const protocol = url.protocol === "https:" ? "https" : "http";
+  return `${protocol}://${hostname}.${getSubdomainHost()}`;
+}
+
+function exchangeTokenRedirectUrl(hostname: string, exchangeToken: string) {
+  return getHostnameUrl(hostname) + "/api/auth/exchange?token=" + exchangeToken;
+}
 
 export default function useAuth() {
   const { t } = useTranslation();
@@ -39,17 +48,10 @@ export default function useAuth() {
     setIsLoading(true);
 
     try {
-      const response = await login(data);
+      await login(data);
       setIsLoading(false);
 
-      // Check if MFA is required
-      if (response?.userHasMfa) {
-        navigate(APP_ROUTE.AUTH.MFA_CHALLENGE + window.location.search);
-      } else if (response?.requiresMfaSetup) {
-        navigate(APP_ROUTE.AUTH.MFA_SETUP_REQUIRED + window.location.search);
-      } else {
-        navigate(getPostLoginRedirect());
-      }
+      navigate(getPostLoginRedirect());
     } catch (err) {
       setIsLoading(false);
 
@@ -78,9 +80,7 @@ export default function useAuth() {
 
       if (response?.requiresLogin) {
         notifications.show({
-          message: t(
-            "Account created successfully. Please log in to set up two-factor authentication.",
-          ),
+          message: t("Account created successfully. Please log in."),
         });
         navigate(APP_ROUTE.AUTH.LOGIN);
       } else {

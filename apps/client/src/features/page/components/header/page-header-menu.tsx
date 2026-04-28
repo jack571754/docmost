@@ -9,6 +9,7 @@ import {
   IconHistory,
   IconLink,
   IconList,
+  IconLock,
   IconMarkdown,
   IconMessage,
   IconPrinter,
@@ -43,11 +44,7 @@ import { formattedDate } from "@/lib/time.ts";
 import { PageStateSegmentedControl } from "@/features/user/components/page-state-pref.tsx";
 import MovePageModal from "@/features/page/components/move-page-modal.tsx";
 import { useTimeAgo } from "@/hooks/use-time-ago.tsx";
-import { PageShareModal } from "@/ee/page-permission";
-import {
-  PageVerificationMenuItem,
-  PageVerificationModal,
-} from "@/ee/page-verification";
+import ShareModal from "@/features/share/components/share-modal.tsx";
 import {
   useFavoriteIds,
   useAddFavoriteMutation,
@@ -58,6 +55,7 @@ import {
   useWatchPageMutation,
   useUnwatchPageMutation,
 } from "@/features/page/queries/watcher-query";
+import PagePermissionsModal from "@/features/community/page-permissions/page-permissions-modal.tsx";
 
 interface PageHeaderMenuProps {
   readOnly?: boolean;
@@ -93,7 +91,7 @@ export default function PageHeaderMenu({ readOnly }: PageHeaderMenuProps) {
 
       {!readOnly && <PageStateSegmentedControl size="xs" />}
 
-      <PageShareModal readOnly={readOnly} />
+      <ShareModal readOnly={readOnly} />
 
       <Tooltip label={t("Comments")} openDelay={250} withArrow>
         <ActionIcon
@@ -140,8 +138,8 @@ function PageActionMenu({ readOnly }: PageActionMenuProps) {
     { open: openMovePageModal, close: closeMoveSpaceModal },
   ] = useDisclosure(false);
   const [
-    verificationOpened,
-    { open: openVerificationModal, close: closeVerificationModal },
+    pagePermissionsOpened,
+    { open: openPagePermissionsModal, close: closePagePermissionsModal },
   ] = useDisclosure(false);
   const [pageEditor] = useAtom(pageEditorAtom);
   const pageUpdatedAt = useTimeAgo(page?.updatedAt);
@@ -269,11 +267,13 @@ function PageActionMenu({ readOnly }: PageActionMenuProps) {
             {t("Page history")}
           </Menu.Item>
 
-          {!readOnly && (
-            <PageVerificationMenuItem
-              pageId={page?.id}
-              onClick={openVerificationModal}
-            />
+          {(page?.permissions?.hasRestriction || !readOnly) && (
+            <Menu.Item
+              leftSection={<IconLock size={16} />}
+              onClick={openPagePermissionsModal}
+            >
+              {t("Page permissions")}
+            </Menu.Item>
           )}
 
           <Menu.Divider />
@@ -366,10 +366,10 @@ function PageActionMenu({ readOnly }: PageActionMenuProps) {
         open={movePageModalOpened}
       />
 
-      <PageVerificationModal
+      <PagePermissionsModal
         pageId={page.id}
-        opened={verificationOpened}
-        onClose={closeVerificationModal}
+        opened={pagePermissionsOpened}
+        onClose={closePagePermissionsModal}
       />
     </>
   );
