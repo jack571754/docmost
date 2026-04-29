@@ -9,6 +9,7 @@ import {
   IconSpaces,
   IconBrush,
   IconWorld,
+  IconHistory,
 } from "@tabler/icons-react";
 import { Link, useLocation } from "react-router-dom";
 import classes from "./settings.module.css";
@@ -18,6 +19,7 @@ import useUserRole from "@/hooks/use-user-role.tsx";
 import { useAtom } from "jotai";
 import {
   prefetchGroups,
+  prefetchAuditLogs,
   prefetchShares,
   prefetchSpaces,
   prefetchWorkspaceMembers,
@@ -59,6 +61,12 @@ const groupedData: DataGroup[] = [
       { label: "Groups", icon: IconUsersGroup, path: "/settings/groups" },
       { label: "Spaces", icon: IconSpaces, path: "/settings/spaces" },
       { label: "Public sharing", icon: IconWorld, path: "/settings/sharing" },
+      {
+        label: "Audit log",
+        icon: IconHistory,
+        path: "/settings/audit",
+        role: "owner",
+      },
     ],
   },
 ];
@@ -106,6 +114,9 @@ export default function SettingsSidebar() {
               break;
             case "Public sharing":
               prefetchHandler = prefetchShares;
+              break;
+            case "Audit log":
+              prefetchHandler = prefetchAuditLogs;
               break;
             default:
               break;

@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Docmost is a pnpm/Nx monorepo. Main applications live in `apps/`: `apps/client` is the React/Vite frontend and `apps/server` is the NestJS backend. Shared editor code is in `packages/editor-ext`; enterprise-only code is separated under `packages/ee` and `apps/client/src/ee`. Client assets are in `apps/client/public`, while backend tests live under `apps/server/test` and unit specs are colocated in `apps/server/src` as `*.spec.ts`. Community/self-developed features should use `apps/client/src/features/community` and `apps/server/src/community`.
+This is a pnpm/Nx monorepo based on Docmost for a personal self-hosted workspace. Main applications live in `apps/`: `apps/client` is the React/Vite frontend and `apps/server` is the NestJS backend. Shared editor code is in `packages/editor-ext`. Client assets are in `apps/client/public`, while backend tests live under `apps/server/test` and unit specs are colocated in `apps/server/src` as `*.spec.ts`. Personal/self-developed features should use `apps/client/src/features/community` and `apps/server/src/community`.
 
 ## Build, Test, and Development Commands
 
@@ -30,4 +30,4 @@ This checkout has minimal history, so use concise imperative commits such as `Ad
 
 ## Security & Agent-Specific Instructions
 
-Do not bypass licensing or import/copy code from `apps/client/src/ee` or `packages/ee` into community features. Keep secrets in `.env`, not source. Before editing, check `git status`; preserve unrelated user changes. Prefer `rg` for searches and avoid destructive Git commands unless explicitly requested.
+Do not import/copy code from upstream proprietary directories into community features. Keep secrets in `.env`, not source. Before editing, check `git status`; preserve unrelated user changes. Prefer `rg` for searches and avoid destructive Git commands unless explicitly requested.

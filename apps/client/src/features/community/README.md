@@ -1,6 +1,9 @@
-# Community extensions
+# Community Features
 
-Self-developed features should live under `apps/client/src/features/community`.
+Self-developed features for this personal project should live under `apps/client/src/features/community`.
 
-Do not copy or import code from `apps/client/src/ee`; those files are covered
-by the Docmost Enterprise Edition license.
+Guidelines:
+
+- Keep feature code independent from upstream proprietary modules.
+- Pair each frontend feature with a matching backend module under `apps/server/src/community` when API support is needed.
+- Prefer small, auditable modules with clear service, query, and type boundaries.

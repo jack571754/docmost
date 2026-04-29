@@ -1,62 +1,41 @@
-<div align="center">
-    <h1><b>Docmost</b></h1>
-    <p>
-        Open-source collaborative wiki and documentation software.
-        <br />
-        <a href="https://docmost.com"><strong>Website</strong></a> | 
-        <a href="https://docmost.com/docs"><strong>Documentation</strong></a> |
-        <a href="https://twitter.com/DocmostHQ"><strong>Twitter / X</strong></a>
-    </p>
-</div>
-<br />
+# Docmost Personal Workspace
 
-## Getting started
+This repository is my personal Docmost-based knowledge workspace. It keeps the collaboration, wiki, page editing, sharing, permissions, and deployment workflows that I use, with project-facing docs focused on local development and self-hosted use.
 
-To get started with Docmost, please refer to our [documentation](https://docmost.com/docs) or try our [cloud version](https://docmost.com/pricing) .
+## What This Project Includes
 
-## Features
+- Real-time collaborative pages and spaces.
+- Groups, members, comments, search, attachments, and page history.
+- Self-developed community features under `apps/client/src/features/community` and `apps/server/src/community`.
+- Docker-based local/self-hosted deployment.
 
-- Real-time collaboration
-- Diagrams (Draw.io, Excalidraw and Mermaid)
-- Spaces
-- Permissions management
-- Groups
-- Comments
-- Page history
-- Search
-- File attachments
-- Embeds (Airtable, Loom, Miro and more)
-- Translations (10+ languages)
+## Local Development
 
-### Screenshots
+```powershell
+pnpm.cmd install --frozen-lockfile
+pnpm.cmd run dev
+```
 
-<p align="center">
-<img alt="home" src="https://docmost.com/screenshots/home.png" width="70%">
-<img alt="editor" src="https://docmost.com/screenshots/editor.png" width="70%">
-</p>
+Build individual apps:
 
-### License
-Docmost core is licensed under the open-source AGPL 3.0 license.  
-Enterprise features are available under an enterprise license (Enterprise Edition).  
+```powershell
+pnpm.cmd run client:build
+pnpm.cmd run server:build
+```
 
-All files in the following directories are licensed under the Docmost Enterprise license defined in `packages/ee/License`.
-  - apps/server/src/ee
-  - apps/client/src/ee
-  - packages/ee
+Run with Docker:
 
-### Contributing
+```powershell
+docker compose up -d
+```
 
-See the [development documentation](https://docmost.com/docs/self-hosting/development)
+## Project Notes
 
-## Thanks
-Special thanks to;
+- This is maintained as a personal project for self-hosted use.
+- New self-developed functionality should be implemented in the `community` namespaces.
+- Avoid coupling personal features to unused upstream modules.
+- Keep deployment secrets in `.env`; do not commit private keys, tokens, or production credentials.
 
-<img width="100" alt="Crowdin" src="https://github.com/user-attachments/assets/a6c3d352-e41b-448d-b6cd-3fbca3109f07" />
+## License
 
-[Crowdin](https://crowdin.com/) for providing access to their localization platform.
-
-
-<img width="48" alt="Algolia-mark-square-white" src="https://github.com/user-attachments/assets/6ccad04a-9589-4965-b6a1-d5cb1f4f9e94" />
-
-[Algolia](https://www.algolia.com/) for providing full-text search to the docs.
-
+See `LICENSE` for the open-source license text included with this repository. Additional third-party or upstream files may retain their original notices where applicable.

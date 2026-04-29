@@ -69,7 +69,7 @@ export function EditSpaceForm({ space, readOnly }: EditSpaceFormProps) {
             <TextInput
               id="name"
               label={t("Name")}
-              placeholder={t("e.g Sales")}
+              placeholder={t("e.g Research")}
               variant="filled"
               readOnly={readOnly}
               {...form.getInputProps("name")}
@@ -86,7 +86,7 @@ export function EditSpaceForm({ space, readOnly }: EditSpaceFormProps) {
             <Textarea
               id="description"
               label={t("Description")}
-              placeholder={t("e.g Space for sales team to collaborate")}
+              placeholder={t("e.g Space for a research team to collaborate")}
               variant="filled"
               readOnly={readOnly}
               autosize

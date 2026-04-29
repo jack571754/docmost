@@ -26,6 +26,7 @@ import { useTrackOrigin } from "@/hooks/use-track-origin";
 import SpacesPage from "@/pages/spaces/spaces.tsx";
 import SpaceTrash from "@/pages/space/space-trash.tsx";
 import FavoritesPage from "@/pages/favorites/favorites-page";
+import AuditLogsPage from "@/features/community/audit/audit-logs-page.tsx";
 
 export default function App() {
   useTrackOrigin();
@@ -77,6 +78,7 @@ export default function App() {
             <Route path={"groups/:groupId"} element={<GroupInfo />} />
             <Route path={"spaces"} element={<Spaces />} />
             <Route path={"sharing"} element={<Shares />} />
+            <Route path={"audit"} element={<AuditLogsPage />} />
           </Route>
         </Route>
 

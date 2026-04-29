@@ -4,6 +4,7 @@ import { getGroups } from "@/features/group/services/group-service.ts";
 import { QueryParams } from "@/lib/types.ts";
 import { getWorkspaceMembers } from "@/features/workspace/services/workspace-service.ts";
 import { getShares } from "@/features/share/services/share-service.ts";
+import { getAuditLogs } from "@/features/community/audit/audit-service.ts";
 
 export const prefetchWorkspaceMembers = () => {
   const params: QueryParams = { limit: 100, query: "" };
@@ -31,5 +32,13 @@ export const prefetchShares = () => {
   queryClient.prefetchQuery({
     queryKey: ["share-list", {}],
     queryFn: () => getShares({}),
+  });
+};
+
+export const prefetchAuditLogs = () => {
+  const params = { limit: 50 };
+  queryClient.prefetchQuery({
+    queryKey: ["audit-logs", params],
+    queryFn: () => getAuditLogs(params),
   });
 };

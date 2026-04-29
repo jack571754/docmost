@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Inject,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectKysely } from 'nestjs-kysely';
@@ -24,6 +25,11 @@ import {
 import { PaginationOptions } from '@docmost/db/pagination/pagination-options';
 import { CursorPaginationResult } from '@docmost/db/pagination/cursor-pagination';
 import { PagePermissionMemberInput } from './dto/page-permissions.dto';
+import { AuditEvent, AuditResource } from '../../common/events/audit-events';
+import {
+  AUDIT_SERVICE,
+  IAuditService,
+} from '../../integrations/audit/audit.service';
 
 type ParsedMemberId = {
   type: 'user' | 'group';
@@ -38,6 +44,7 @@ export class PagePermissionsService {
     private readonly pagePermissionRepo: PagePermissionRepo,
     private readonly pageAccessService: PageAccessService,
     private readonly spaceAbility: SpaceAbilityFactory,
+    @Inject(AUDIT_SERVICE) private readonly auditService: IAuditService,
   ) {}
 
   async getInfo(
@@ -117,12 +124,27 @@ export class PagePermissionsService {
         );
       }
     });
+
+    this.auditService.log({
+      event: AuditEvent.PAGE_RESTRICTED,
+      resourceType: AuditResource.PAGE,
+      resourceId: page.id,
+      spaceId: page.spaceId,
+      metadata: { memberCount: members?.length ?? 0 },
+    });
   }
 
   async disable(pageId: string, user: User) {
     const page = await this.getVisiblePage(pageId, user);
     await this.assertCanManage(page, user);
     await this.pagePermissionRepo.deletePageAccess(page.id);
+
+    this.auditService.log({
+      event: AuditEvent.PAGE_RESTRICTION_REMOVED,
+      resourceType: AuditResource.PAGE,
+      resourceId: page.id,
+      spaceId: page.spaceId,
+    });
   }
 
   async addMembers(
@@ -145,6 +167,14 @@ export class PagePermissionsService {
           trx,
         );
       }
+    });
+
+    this.auditService.log({
+      event: AuditEvent.PAGE_PERMISSION_ADDED,
+      resourceType: AuditResource.PAGE,
+      resourceId: page.id,
+      spaceId: page.spaceId,
+      metadata: { role, memberIds },
     });
   }
 
@@ -173,6 +203,18 @@ export class PagePermissionsService {
       role,
       this.memberWhere(member),
     );
+
+    this.auditService.log({
+      event: AuditEvent.PAGE_PERMISSION_ADDED,
+      resourceType: AuditResource.PAGE,
+      resourceId: page.id,
+      spaceId: page.spaceId,
+      changes: {
+        before: { role: existing.role },
+        after: { role },
+      },
+      metadata: { memberId },
+    });
   }
 
   async removeMember(pageId: string, memberId: string, user: User) {
@@ -198,6 +240,14 @@ export class PagePermissionsService {
         member.id,
       );
     }
+
+    this.auditService.log({
+      event: AuditEvent.PAGE_PERMISSION_REMOVED,
+      resourceType: AuditResource.PAGE,
+      resourceId: page.id,
+      spaceId: page.spaceId,
+      metadata: { memberId, role: existing.role },
+    });
   }
 
   private async getVisiblePage(pageId: string, user: User): Promise<Page> {
