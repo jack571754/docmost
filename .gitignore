@@ -1,10 +1,20 @@
+# Environment and local data
 .env
-.env.dev
-.env.prod
-data
-# compiled output
-/dist
-/node_modules
+.env.*
+!.env.example
+data/
+
+# Dependencies
+node_modules/
+apps/*/node_modules/
+packages/*/node_modules/
+
+# Compiled output
+dist/
+apps/*/dist/
+packages/*/dist/
+*.tsbuildinfo
+apps/client/node_modules/.vite/
 
 # Logs
 logs
@@ -21,6 +31,7 @@ lerna-debug.log*
 # Tests
 /coverage
 /.nyc_output
+coverage/
 
 # IDEs and editors
 /.idea
@@ -41,3 +52,6 @@ lerna-debug.log*
 .nx
 .nx/installation
 .nx/cache
+.cache/
+tmp/
+temp/
