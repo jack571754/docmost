@@ -80,6 +80,9 @@ export class SearchController {
     @AuthUser() user: User,
     @AuthWorkspace() workspace: Workspace,
   ) {
+    if (!this.environmentService.isSearchSuggestionsEnabled()) {
+      return { users: [], groups: [], pages: [] };
+    }
     return this.searchService.searchSuggestions(dto, user.id, workspace.id);
   }
 
