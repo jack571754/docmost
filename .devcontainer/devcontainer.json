@@ -1,0 +1,40 @@
+{
+    "name": "Docmost Dev",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "remoteUser": "root",
+
+    // 容器创建后自动安装依赖、跑迁移
+    // 以 root 运行 postCreateCommand，先 chown 修正具名卷权限，再切 node 用户跑 pnpm
+    "postCreateCommand": "chown -R node:node /workspace/node_modules /workspace/apps/server/node_modules /workspace/apps/client/node_modules /workspace/packages/editor-ext/node_modules /home/node/.local && su node -c 'pnpm config set store-dir /home/node/.local/share/pnpm/store && pnpm install --no-frozen-lockfile && pnpm --filter server run migration:latest'",
+
+    // 自动安装的 VSCode 扩展（装到容器内）
+    "customizations": {
+      "vscode": {
+        "settings": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": "explicit"
+          },
+          "typescript.tsdk": "node_modules/typescript/lib"
+        },
+        "extensions": [
+          "dbaeumer.vscode-eslint",
+          "esbenp.prettier-vscode",
+          "bradlc.vscode-tailwindcss",
+          "ms-azuretools.vscode-docker",
+          "redhat.vscode-yaml"
+        ]
+      }
+    },
+
+    // 容器内可用的端口转发
+    "forwardPorts": [3000, 5173, 3001],
+    "portsAttributes": {
+      "3000": { "label": "Backend API" },
+      "5173": { "label": "Vite Dev" },
+      "3001": { "label": "Collab" }
+    }
+  }

@@ -1,0 +1,75 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: docmost-dev
+    working_dir: /workspace
+    volumes:
+      # 只挂载 docmost 项目本身到容器内 /workspace（../.. 会把整个用户目录挂进来，已修正）
+      - ..:/workspace:cached
+      # 隔离 node_modules，避免宿主机 Windows 版二进制漏进 Linux 容器；
+      # 同时避免 WSL9P(Drvfs) 文件系统对 .bin 软链 chmod 报 EPERM/EPERM。
+      # 所有会写 node_modules 的层级都要隔离。
+      - app-node-modules:/workspace/node_modules
+      - apps-server-node-modules:/workspace/apps/server/node_modules
+      - apps-client-node-modules:/workspace/apps/client/node_modules
+      - pkg-editor-ext-node-modules:/workspace/packages/editor-ext/node_modules
+      # pnpm store 持久化，加速重装
+      - pnpm-store:/home/node/.local/share/pnpm/store
+    command: sleep infinity
+    environment:
+      # 密码与 .env 保持一致，避免 app 读 .env 时连不上 db
+      DATABASE_URL: postgres://docmost:KL29RdDB22PPaZeAhPQHIoZCwBpNLbL@db:5432/docmost
+      REDIS_URL: redis://redis:6379
+      APP_URL: http://localhost:3000
+      APP_SECRET: 51c1c895e9c6fabe145926864dc8ae1b76729248fbf2efeb7ff712304dfdedb1
+      STORAGE_DRIVER: local
+      MAIL_DRIVER: smtp
+      # 显式清空代理，避免宿主机代理变量(如127.0.0.1:10809)被注入容器导致连接被拒
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
+      NO_PROXY: "*"
+      no_proxy: "*"
+      # 源码在 /mnt/c(WSL2 Drvfs) 上，原生 inotify 文件监听会 EPERM；
+      # 禁用 nx daemon + 改轮询监听，保证 nest --watch 热重载可用。
+      NX_DAEMON: "false"
+      TSC_WATCHFILE: "DynamicPriorityPollingFilewatcher"
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "3000:3000"   # 后端 API
+      - "5173:5173"   # 前端 Vite
+      - "3001:3001"   # 协作服务
+
+  db:
+    # postgres:18+ 改了数据目录结构，期望挂载点为 /var/lib/postgresql（数据落在其版本子目录），
+    # 而非旧的 /var/lib/postgresql/data。否则检测到旧格式数据会拒绝启动并 Restarting。
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: docmost
+      POSTGRES_PASSWORD: KL29RdDB22PPaZeAhPQHIoZCwBpNLbL
+      POSTGRES_DB: docmost
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+  redis:
+    image: redis:8
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+
+volumes:
+  app-node-modules:
+  apps-server-node-modules:
+  apps-client-node-modules:
+  pkg-editor-ext-node-modules:
+  pnpm-store:
+  pgdata:
+  redis-data:

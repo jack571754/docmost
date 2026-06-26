@@ -1,7 +1,9 @@
 FROM node:22-slim AS base
 LABEL org.opencontainers.image.source="https://github.com/docmost/docmost"
 
-RUN npm install -g pnpm@10.4.0
+RUN npm config set registry https://registry.npmmirror.com \
+  && npm install -g pnpm@10.4.0 \
+  && pnpm config set registry https://registry.npmmirror.com
 
 FROM base AS builder
 
