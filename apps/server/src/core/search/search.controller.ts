@@ -3,15 +3,18 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
   HttpCode,
   HttpStatus,
   Logger,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { SearchService } from './search.service';
 import {
   SearchDTO,
+  SearchLogDTO,
   SearchShareDTO,
   SearchSuggestionDTO,
 } from './dto/search.dto';
@@ -80,10 +83,32 @@ export class SearchController {
     @AuthUser() user: User,
     @AuthWorkspace() workspace: Workspace,
   ) {
-    if (!this.environmentService.isSearchSuggestionsEnabled()) {
-      return { users: [], groups: [], pages: [] };
-    }
     return this.searchService.searchSuggestions(dto, user.id, workspace.id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('log')
+  async logSearchKeyword(
+    @Body() dto: SearchLogDTO,
+    @AuthUser() user: User,
+    @AuthWorkspace() workspace: Workspace,
+  ) {
+    await this.searchService.logSearchKeyword(dto, user.id, workspace.id);
+    return { success: true };
+  }
+
+  @Get('keywords')
+  async keywordSuggestions(
+    @Query('query') query: string,
+    @Query('limit') limit: number,
+    @AuthWorkspace() workspace: Workspace,
+  ) {
+    const items = await this.searchService.getKeywordSuggestions(
+      query,
+      workspace.id,
+      limit,
+    );
+    return { items };
   }
 
   @Public()

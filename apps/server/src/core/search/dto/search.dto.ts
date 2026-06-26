@@ -66,3 +66,13 @@ export class SearchSuggestionDTO {
   @IsNumber()
   limit?: number;
 }
+
+export class SearchLogDTO {
+  @IsNotEmpty()
+  @IsString()
+  query: string;
+
+  @IsOptional()
+  @IsString()
+  spaceId?: string;
+}

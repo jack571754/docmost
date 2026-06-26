@@ -38,6 +38,11 @@ export interface IPageSearchParams {
   shareId?: string;
 }
 
+export interface IKeywordSuggestion {
+  query: string;
+  searchCount: number;
+}
+
 export interface IAttachmentSearch {
   id: string;
   fileName: string;

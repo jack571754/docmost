@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery, UseQueryResult } from "@tanstack/react-query";
 import {
+  getKeywordSuggestions,
   searchAttachments,
   searchPage,
   searchShare,
@@ -7,6 +8,7 @@ import {
 } from '@/features/search/services/search-service';
 import {
   IAttachmentSearch,
+  IKeywordSuggestion,
   IPageSearch,
   IPageSearchParams,
   ISuggestionResult,
@@ -53,5 +55,19 @@ export function useAttachmentSearchQuery(
     queryKey: ["attachment-search", params],
     queryFn: () => searchAttachments(params),
     enabled: !!params.query,
+  });
+}
+
+export function useKeywordSuggestionsQuery(
+  query: string,
+  enabled: boolean = true,
+): UseQueryResult<IKeywordSuggestion[], Error> {
+  const trimmed = query.trim();
+  return useQuery({
+    queryKey: ["search-keywords", trimmed],
+    staleTime: 60 * 1000, // 1min
+    queryFn: () => getKeywordSuggestions(trimmed),
+    enabled: enabled && trimmed.length >= 2,
+    placeholderData: keepPreviousData,
   });
 }

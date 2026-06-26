@@ -1,4 +1,4 @@
-import { Group, Text } from "@mantine/core";
+import { Group } from "@mantine/core";
 import { Spotlight } from "@mantine/spotlight";
 import { IconSearch } from "@tabler/icons-react";
 import React, { useMemo, useState } from "react";
@@ -8,8 +8,9 @@ import { searchSpotlightStore } from "../constants.ts";
 import { SearchSpotlightFilters } from "./search-spotlight-filters.tsx";
 import { useUnifiedSearch } from "../hooks/use-unified-search.ts";
 import { SearchResultItem } from "./search-result-item.tsx";
-import { useSpotlightSuggestions } from "@/features/community/search/hooks/useSpotlightSuggestions";
-import { SuggestionGroup } from "@/features/community/search/components/SuggestionGroup";
+import { KeywordSuggestions } from "./keyword-suggestions.tsx";
+import { useKeywordSuggestionsQuery } from "../queries/search-query.ts";
+import { logSearchKeyword } from "../services/search-service.ts";
 
 interface SearchSpotlightProps {
   spaceId?: string;
@@ -44,10 +45,15 @@ export function SearchSpotlight({ spaceId }: SearchSpotlightProps) {
     true,
   );
 
-  const { suggestions, isEnabled: isSuggestionsEnabled } = useSpotlightSuggestions({
-    query: debouncedSearchQuery,
-    spaceId: filters.spaceId || undefined,
-  });
+  const { data: keywordSuggestions } = useKeywordSuggestionsQuery(
+    debouncedSearchQuery,
+  );
+
+  const handleSearchCommitted = () => {
+    const q = debouncedSearchQuery.trim();
+    if (q.length < 2) return;
+    logSearchKeyword({ query: q, spaceId: filters.spaceId ?? undefined });
+  };
 
   const resultItems = (searchResults || []).map((result) => (
     <SearchResultItem
@@ -55,6 +61,7 @@ export function SearchSpotlight({ spaceId }: SearchSpotlightProps) {
       result={result}
       isAttachmentResult={false}
       showSpace={!filters.spaceId}
+      onResultClick={handleSearchCommitted}
     />
   ));
 
@@ -90,28 +97,22 @@ export function SearchSpotlight({ spaceId }: SearchSpotlightProps) {
       </div>
 
       <Spotlight.ActionsList>
-        {isSuggestionsEnabled && suggestions && (
-          <SuggestionGroup suggestions={suggestions} />
-        )}
-
         {query.length === 0 && resultItems.length === 0 && (
           <Spotlight.Empty>{t("Start typing to search...")}</Spotlight.Empty>
         )}
 
-        {query.length > 0 && !isLoading && resultItems.length === 0 && (!suggestions || (!suggestions.pages?.length && !suggestions.users?.length && !suggestions.groups?.length)) && (
+        {query.length > 0 && !isLoading && resultItems.length === 0 && (
           <Spotlight.Empty>{t("No results found...")}</Spotlight.Empty>
         )}
 
-        {resultItems.length > 0 && (
-          <>
-            {isSuggestionsEnabled && suggestions && (suggestions.pages?.length || suggestions.users?.length || suggestions.groups?.length) ? (
-              <div style={{ padding: '8px 16px', borderTop: '1px solid var(--mantine-color-default-border)' }}>
-                <Text size="xs" fw={700} c="dimmed">{t("Full Text Search Results")}</Text>
-              </div>
-            ) : null}
-            {resultItems}
-          </>
+        {debouncedSearchQuery.trim().length >= 2 && keywordSuggestions && (
+          <KeywordSuggestions
+            suggestions={keywordSuggestions}
+            onPick={(kw) => setQuery(kw)}
+          />
         )}
+
+        {resultItems.length > 0 && <>{resultItems}</>}
       </Spotlight.ActionsList>
     </Spotlight.Root>
   );

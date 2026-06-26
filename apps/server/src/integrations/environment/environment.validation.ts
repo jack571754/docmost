@@ -170,10 +170,6 @@ export class EnvironmentVariables {
     },
   )
   CLICKHOUSE_URL: string;
-
-  @IsOptional()
-  @IsString()
-  ENABLE_SEARCH_SUGGESTIONS?: string;
 }
 
 export function validate(config: Record<string, any>) {

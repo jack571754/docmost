@@ -24,12 +24,14 @@ interface SearchResultItemProps {
   result: IPageSearch | IAttachmentSearch;
   isAttachmentResult: boolean;
   showSpace?: boolean;
+  onResultClick?: () => void;
 }
 
 export function SearchResultItem({
   result,
   isAttachmentResult,
   showSpace,
+  onResultClick,
 }: SearchResultItemProps) {
   const { t } = useTranslation();
 
@@ -52,6 +54,7 @@ export function SearchResultItem({
           attachmentResult.page.slugId,
           attachmentResult.page.title,
         )}
+        onClick={onResultClick}
         style={{ userSelect: "none" }}
       >
         <Group wrap="nowrap" w="100%">
@@ -102,6 +105,7 @@ export function SearchResultItem({
           pageResult.slugId,
           pageResult.title,
         )}
+        onClick={onResultClick}
         style={{ userSelect: "none" }}
       >
         <Group wrap="nowrap" w="100%">
@@ -118,8 +122,9 @@ export function SearchResultItem({
 
             {pageResult?.highlight && (
               <Text
-                opacity={0.6}
                 size="xs"
+                c="dimmed"
+                lineClamp={2}
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(pageResult.highlight, {
                     ALLOWED_TAGS: ["mark", "em", "strong", "b"],

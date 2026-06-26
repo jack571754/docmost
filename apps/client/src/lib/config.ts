@@ -100,10 +100,6 @@ export function getPostHogKey() {
   return getConfigValue("POSTHOG_KEY");
 }
 
-export function isSearchSuggestionsEnabled(): boolean {
-  return castToBoolean(getConfigValue("ENABLE_SEARCH_SUGGESTIONS", "true"));
-}
-
 function getConfigValue(key: string, defaultValue: string = undefined): string {
   const rawValue = import.meta.env.DEV
     ? process?.env?.[key]

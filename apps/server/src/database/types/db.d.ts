@@ -186,6 +186,16 @@ export interface Favorites {
   createdAt: Generated<Timestamp>;
 }
 
+export interface SearchKeywords {
+  id: Generated<string>;
+  workspaceId: string;
+  query: string;
+  spaceId: string | null;
+  searchCount: number;
+  lastSearchedAt: Timestamp;
+  createdAt: Generated<Timestamp>;
+}
+
 export interface FileTasks {
   createdAt: Generated<Timestamp>;
   creatorId: string | null;
@@ -558,6 +568,7 @@ export interface DB {
   pageVerifications: PageVerifications;
   pageVerifiers: PageVerifiers;
   pages: Pages;
+  searchKeywords: SearchKeywords;
   shares: Shares;
   spaceMembers: SpaceMembers;
   spaces: Spaces;

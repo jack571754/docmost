@@ -228,11 +228,6 @@ export class EnvironmentService {
       .toLowerCase();
   }
 
-  isSearchSuggestionsEnabled(): boolean {
-    const enabled = this.configService.get<string>('ENABLE_SEARCH_SUGGESTIONS', 'true');
-    return enabled === 'true';
-  }
-
   getTypesenseUrl(): string {
     return this.configService
       .get<string>('TYPESENSE_URL', 'http://localhost:8108')

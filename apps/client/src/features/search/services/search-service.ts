@@ -1,6 +1,7 @@
 import api from "@/lib/api-client";
 import {
   IAttachmentSearch,
+  IKeywordSuggestion,
   IPageSearch,
   IPageSearchParams,
   ISuggestionResult,
@@ -32,5 +33,22 @@ export async function searchAttachments(
   params: IPageSearchParams,
 ): Promise<IAttachmentSearch[]> {
   const req = await api.post<{ items: IAttachmentSearch[] }>("/search-attachments", params);
+  return req.data.items;
+}
+
+export async function logSearchKeyword(params: {
+  query: string;
+  spaceId?: string;
+}): Promise<void> {
+  await api.post("/search/log", params);
+}
+
+export async function getKeywordSuggestions(
+  query: string,
+  limit?: number,
+): Promise<IKeywordSuggestion[]> {
+  const req = await api.get<{ items: IKeywordSuggestion[] }>("/search/keywords", {
+    params: { query, limit },
+  });
   return req.data.items;
 }

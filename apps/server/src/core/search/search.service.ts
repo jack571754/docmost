@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SearchDTO, SearchSuggestionDTO } from './dto/search.dto';
+import { SearchDTO, SearchLogDTO, SearchSuggestionDTO } from './dto/search.dto';
 import { SearchResponseDto } from './dto/search-response.dto';
 import { InjectKysely } from 'nestjs-kysely';
 import { KyselyDB } from '@docmost/db/types/kysely.types';
@@ -50,7 +50,7 @@ export class SearchService {
         sql<number>`ts_rank(tsv, to_tsquery('english', f_unaccent(${searchQuery})))`.as(
           'rank',
         ),
-        sql<string>`ts_headline('english', text_content, to_tsquery('english', f_unaccent(${searchQuery})),'MinWords=9, MaxWords=10, MaxFragments=3')`.as(
+        sql<string>`ts_headline('english', text_content, to_tsquery('english', f_unaccent(${searchQuery})),'MinWords=15, MaxWords=30, MaxFragments=3, StartSel=<mark>, StopSel=</mark>')`.as(
           'highlight',
         ),
       ])
@@ -246,5 +246,60 @@ export class SearchService {
     }
 
     return { users, groups, pages };
+  }
+
+  /**
+   * 记录一次提交的搜索词(用户点击搜索结果 / 按 Enter 时调用)。
+   * 对 (workspaceId, query) 做 upsert,累加 search_count。
+   */
+  async logSearchKeyword(
+    dto: SearchLogDTO,
+    _userId: string,
+    workspaceId: string,
+  ): Promise<void> {
+    const query = dto.query.trim().toLowerCase();
+    if (query.length < 2) {
+      return;
+    }
+
+    await this.db
+      .insertInto('searchKeywords')
+      .values({
+        workspaceId,
+        query,
+        spaceId: dto.spaceId ?? null,
+        searchCount: 1,
+      })
+      .onConflict((oc) =>
+        oc.columns(['workspaceId', 'query']).doUpdateSet({
+          searchCount: sql`search_keywords.search_count + 1`,
+          lastSearchedAt: sql`now()`,
+        }),
+      )
+      .execute();
+  }
+
+  /**
+   * 返回与给定前缀匹配的热门搜索词联想(按搜索次数 + 最近搜索时间排序)。
+   */
+  async getKeywordSuggestions(
+    query: string,
+    workspaceId: string,
+    limit = 8,
+  ): Promise<{ query: string; searchCount: number }[]> {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) {
+      return [];
+    }
+
+    return this.db
+      .selectFrom('searchKeywords')
+      .select(['query', 'searchCount'])
+      .where('workspaceId', '=', workspaceId)
+      .where('query', 'like', `${q}%`)
+      .orderBy('searchCount', 'desc')
+      .orderBy('lastSearchedAt', 'desc')
+      .limit(limit)
+      .execute();
   }
 }
